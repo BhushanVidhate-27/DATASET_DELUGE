@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Typecheck, Test, Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build database (full pipeline)
+        run: pnpm build-db
+        env:
+          DATASET_VERSION: ci-build
+          DOWNLOAD_BASE_URL: https://example.com/deluge-db
+        timeout-minutes: 10
+
+      - name: Verify generated artifacts
+        run: |
+          for f in pokemon.json recommendations.json evolutions.json forms.json pokemon-db.json pokemon-db.json.gz metadata.json version.json checksum.json; do
+            if [ ! -f "generated/$f" ]; then
+              echo "Missing generated/$f"
+              exit 1
+            fi
+          done
+          echo "All generated artifacts present"
+
+      - name: Upload generated artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dataset-ci
+          path: generated/
+          retention-days: 7
