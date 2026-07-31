@@ -306,66 +306,64 @@ out of the box:
 
 ### Option 1: Vercel (Recommended)
 
-Vercel hosts the `generated/` directory as a static site with proper CORS
+Vercel hosts the `generated/` directory as a **static site** with proper CORS
 headers and content types configured via `vercel.json`.
+
+The `generated/` directory is committed to the repo so Vercel can serve it
+without a build step. The GitHub Actions workflow rebuilds the dataset and
+commits the new files on tag push, which triggers a Vercel auto-deploy.
+
+#### Vercel Import Settings
+
+When importing the project on Vercel:
+
+| Setting              | Value                             |
+| -------------------- | --------------------------------- |
+| **Framework Preset** | `Other`                           |
+| **Root Directory**   | `./`                              |
+| **Build Command**    | _leave empty_ (no build needed)   |
+| **Output Directory** | `generated`                       |
+| **Install Command**  | _leave empty_ (no install needed) |
+
+No environment variables needed on Vercel — the build runs in GitHub Actions.
 
 #### Quick Setup
 
-1. **Install the Vercel CLI:**
+1. **Import the repo on Vercel** using the settings above.
+
+2. **Push a tag to trigger the build + deploy:**
 
    ```bash
-   pnpm add -g vercel
+   git tag v1.0.0
+   git push origin v1.0.0
    ```
 
-2. **Link the project:**
+   This triggers the `deploy-vercel.yml` workflow which:
+   - Builds the full dataset in GitHub Actions (avoids Vercel's 45s build timeout)
+   - Commits `generated/` files back to the repo
+   - Vercel auto-deploys from the new commit
+
+3. **Set the Vercel URL** (optional, if you want a custom domain):
 
    ```bash
-   vercel link
-   ```
-
-   Follow the prompts to create or link a Vercel project.
-
-3. **Build the dataset locally:**
-
-   ```bash
-   pnpm build-db
-   ```
-
-4. **Deploy:**
-
-   ```bash
-   # Preview deployment
-   vercel
-
-   # Production deployment
-   vercel --prod
-   ```
-
-5. **Set `DOWNLOAD_BASE_URL` to your Vercel URL:**
-
-   ```bash
-   # For local builds
-   echo 'DOWNLOAD_BASE_URL=https://your-project.vercel.app' >> .env
-
-   # For CI/CD
-   gh variable set VERCEL_DOWNLOAD_BASE_URL --body "https://your-project.vercel.app"
+   gh variable set VERCEL_DOWNLOAD_BASE_URL --body "https://dataset-deluge.vercel.app"
    ```
 
 #### What Vercel Serves
 
 After deployment, these URLs are available:
 
-| URL                                                 | Content                                |
-| --------------------------------------------------- | -------------------------------------- |
-| `https://<project>.vercel.app/pokemon-db.json.gz`   | Compressed database (primary download) |
-| `https://<project>.vercel.app/pokemon-db.json`      | Uncompressed database                  |
-| `https://<project>.vercel.app/version.json`         | Version + checksum + downloadURL       |
-| `https://<project>.vercel.app/metadata.json`        | Full metadata                          |
-| `https://<project>.vercel.app/pokemon.json`         | All Pokémon data                       |
-| `https://<project>.vercel.app/recommendations.json` | Deluge Companion recommendations       |
-| `https://<project>.vercel.app/evolutions.json`      | Evolution chains                       |
-| `https://<project>.vercel.app/forms.json`           | Form data                              |
-| `https://<project>.vercel.app/checksum.json`        | SHA-256 checksum                       |
+| URL                                                      | Content                                |
+| -------------------------------------------------------- | -------------------------------------- |
+| `https://dataset-deluge.vercel.app/pokemon-db.json.gz`   | Compressed database (primary download) |
+| `https://dataset-deluge.vercel.app/pokemon-db.json`      | Uncompressed database                  |
+| `https://dataset-deluge.vercel.app/version.json`         | Version + checksum + downloadURL       |
+| `https://dataset-deluge.vercel.app/metadata.json`        | Full metadata                          |
+| `https://dataset-deluge.vercel.app/pokemon.json`         | All Pokémon data                       |
+| `https://dataset-deluge.vercel.app/recommendations.json` | Deluge Companion recommendations       |
+| `https://dataset-deluge.vercel.app/evolutions.json`      | Evolution chains                       |
+| `https://dataset-deluge.vercel.app/forms.json`           | Form data                              |
+| `https://dataset-deluge.vercel.app/checksum.json`        | SHA-256 checksum                       |
 
 #### Vercel Configuration
 
@@ -373,25 +371,26 @@ After deployment, these URLs are available:
   content types (`application/json` for `.json`, `application/gzip` for `.gz`),
   and caching (`max-age=3600`).
 - `.vercelignore` — Excludes everything except `generated/` from deployment.
+- `.gitignore` — Ignores `generated/.gitkeep` only; all other generated files
+  are committed so Vercel can serve them.
 
-#### Automated Vercel Deploys via GitHub Actions
+#### Manual Deploy (Alternative)
 
-The `deploy-vercel.yml` workflow automatically deploys to Vercel on tag push.
-Set up the required secrets:
-
-```bash
-# Get these from Vercel dashboard → Settings
-gh secret set VERCEL_TOKEN --body "your-vercel-token"
-gh secret set VERCEL_ORG_ID --body "your-org-id"
-gh secret set VERCEL_PROJECT_ID --body "your-project-id"
-```
-
-Then push a tag:
+If you prefer to build and deploy manually:
 
 ```bash
-git tag v1.2.0
-git push origin v1.2.0
-# → Builds dataset, deploys to Vercel, creates GitHub Release
+# Build the dataset locally
+pnpm build-db
+
+# Commit the generated files
+git add generated/
+git commit -m "chore: update dataset"
+git push
+
+# Vercel auto-deploys from the push
+# Or deploy directly with the CLI:
+pnpm add -g vercel
+vercel --prod
 ```
 
 ### Option 2: GitHub Releases / Cloudflare R2

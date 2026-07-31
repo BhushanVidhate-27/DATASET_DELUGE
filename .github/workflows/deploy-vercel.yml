@@ -12,24 +12,21 @@ on:
         default: ''
 
 permissions:
-  contents: read
+  contents: write
   deployments: write
-
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
   deploy:
-    name: Build and Deploy to Vercel
+    name: Build, Commit, and Deploy to Vercel
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Only run if Vercel secrets are configured
-    if: ${{ secrets.VERCEL_TOKEN != '' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -60,11 +57,24 @@ jobs:
             echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Determine Vercel URL
+        id: url
+        run: |
+          if [ -n "${{ vars.VERCEL_DOWNLOAD_BASE_URL }}" ]; then
+            echo "base_url=${{ vars.VERCEL_DOWNLOAD_BASE_URL }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base_url=https://dataset-deluge.vercel.app" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build database (full pipeline)
         run: pnpm build-db
         env:
           DATASET_VERSION: ${{ steps.version.outputs.version }}
-          DOWNLOAD_BASE_URL: ${{ vars.VERCEL_DOWNLOAD_BASE_URL || format('https://{0}.vercel.app', vars.VERCEL_PROJECT_NAME || 'deluge-db') }}
+          DOWNLOAD_BASE_URL: ${{ steps.url.outputs.base_url }}
+          FETCH_CONCURRENCY: 4
+          FETCH_DELAY_MS: 100
+          FETCH_RETRIES: 5
+          FETCH_RETRY_DELAY_MS: 2000
         timeout-minutes: 10
 
       - name: Verify generated artifacts
@@ -77,24 +87,21 @@ jobs:
           done
           echo "All generated artifacts present"
 
-      - name: Install Vercel CLI
-        run: pnpm add -g vercel@latest
-
-      - name: Pull Vercel environment
-        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
-        continue-on-error: true
-
-      - name: Deploy to Vercel (production)
-        id: deploy
+      - name: Commit generated files
         run: |
-          DEPLOY_URL=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
-          echo "deploy_url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
-          echo "Deployed to: $DEPLOY_URL"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add generated/
+          git commit -m "chore: update dataset to v${{ steps.version.outputs.version }} [skip ci]" || echo "No changes to commit"
+          git push
 
-      - name: Output deployment URL
+      - name: Trigger Vercel deployment
         run: |
-          echo "🚀 Dataset deployed to: ${{ steps.deploy.outputs.deploy_url }}"
-          echo "📦 Files available at:"
-          echo "  ${{ steps.deploy.outputs.deploy_url }}/pokemon-db.json.gz"
-          echo "  ${{ steps.deploy.outputs.deploy_url }}/version.json"
-          echo "  ${{ steps.deploy.outputs.deploy_url }}/metadata.json"
+          echo "✅ Generated files committed to ${{ github.ref_name || github.ref }}"
+          echo "🚀 Vercel will auto-deploy from the push"
+          echo "📦 Dataset will be available at: ${{ steps.url.outputs.base_url }}"
+          echo ""
+          echo "Files:"
+          echo "  ${{ steps.url.outputs.base_url }}/pokemon-db.json.gz"
+          echo "  ${{ steps.url.outputs.base_url }}/version.json"
+          echo "  ${{ steps.url.outputs.base_url }}/metadata.json"
