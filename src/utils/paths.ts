@@ -1,12 +1,25 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import fs from 'node:fs';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Project root is two levels up from src/utils/ → project root.
+ * Finds the project root directory by searching upward for package.json.
+ * Works seamlessly across src/ (development) and dist/ (compiled output).
  */
-export const PROJECT_ROOT = path.resolve(currentDir, '..', '..');
+function findProjectRoot(dir: string): string {
+  let current = dir;
+  while (current !== path.dirname(current)) {
+    if (fs.existsSync(path.join(current, 'package.json'))) {
+      return current;
+    }
+    current = path.dirname(current);
+  }
+  return path.resolve(dir, '..', '..');
+}
+
+export const PROJECT_ROOT = findProjectRoot(currentDir);
 
 export const RAW_DIR = path.join(PROJECT_ROOT, 'raw');
 export const INTERMEDIATE_DIR = path.join(PROJECT_ROOT, 'intermediate');
