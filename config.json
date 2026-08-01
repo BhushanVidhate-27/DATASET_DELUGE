@@ -8,7 +8,7 @@
   "datasetVersion": "1.0.0",
   "minExtensionVersion": "1.0.0",
   "generatorVersion": "1.0.0",
-  "downloadBaseUrl": "https://example.com/deluge-db",
+  "downloadBaseUrl": "https://dataset-for-deluge.vercel.app",
   "gzipLevel": 9,
   "server": {
     "port": 3000,
