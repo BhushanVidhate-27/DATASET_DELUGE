@@ -25,7 +25,9 @@ import { idFromUrl } from '../transform/pokeapiRefs.js';
  *
  * No Pokémon data is invented here; raw payloads are only reshaped.
  */
-export async function runNormalizeStage(): Promise<void> {
+import type { Config } from '../utils/config.js';
+
+export async function runNormalizeStage(_config?: Config): Promise<void> {
   logger.step('Normalize', 'Reading raw data and building normalized resources…');
 
   await ensureDir(NORMALIZED_DIR);

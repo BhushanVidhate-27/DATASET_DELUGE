@@ -2,7 +2,7 @@ import { GENERATED_DIR, GENERATED_PATHS, SCORED_POKEMON_PATH } from '../utils/pa
 import { ensureDir, readJson, writeJson } from '../utils/fs.js';
 import { logger } from '../utils/logger.js';
 import type { DelugeFields, ScoredPokemon } from '../validators/schema.js';
-import type { Config } from '../utils/env.js';
+import type { Config } from '../utils/config.js';
 import { sha256Hex } from '../utils/hash.js';
 import { validateOutputFiles } from '../validators/index.js';
 import { readFile } from 'node:fs/promises';

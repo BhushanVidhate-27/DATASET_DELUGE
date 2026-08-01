@@ -3,6 +3,8 @@
   "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
+  "buildCommand": "pnpm build",
+  "outputDirectory": "generated",
   "headers": [
     {
       "source": "/(.*)\\.json",

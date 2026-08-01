@@ -1,0 +1,22 @@
+{
+  "pokeApiBaseUrl": "https://pokeapi.co/api/v2",
+  "fetchConcurrency": 8,
+  "fetchDelayMs": 0,
+  "fetchRetries": 3,
+  "fetchRetryDelayMs": 1000,
+  "fetchTimeoutMs": 30000,
+  "datasetVersion": "1.0.0",
+  "minExtensionVersion": "1.0.0",
+  "generatorVersion": "1.0.0",
+  "downloadBaseUrl": "https://example.com/deluge-db",
+  "gzipLevel": 9,
+  "server": {
+    "port": 3000,
+    "host": "0.0.0.0"
+  },
+  "paths": {
+    "rawDir": "raw",
+    "intermediateDir": "intermediate",
+    "generatedDir": "generated"
+  }
+}

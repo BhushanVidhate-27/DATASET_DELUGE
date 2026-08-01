@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { getConfig } from './utils/env.js';
+import { getConfig } from './utils/config.js';
 import { logger } from './utils/logger.js';
 import { MissingInputError } from './utils/errors.js';
 import { runFetchStage } from './fetch/fetchStage.js';

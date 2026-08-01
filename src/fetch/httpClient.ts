@@ -5,6 +5,7 @@ export interface HttpClientOptions {
   baseUrl: string;
   retries: number;
   retryDelayMs: number;
+  timeoutMs?: number;
 }
 
 interface JsonResponse<T> {
@@ -44,10 +45,11 @@ export class HttpClient {
   }
 
   private async tryOnce<T>(url: string): Promise<JsonResponse<T> | null> {
+    const timeout = this.options.timeoutMs ?? 30_000;
     try {
       const response = await fetch(url, {
         headers: { accept: 'application/json' },
-        signal: AbortSignal.timeout(30_000),
+        signal: AbortSignal.timeout(timeout),
       });
 
       if (response.status === 404) {

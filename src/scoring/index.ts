@@ -9,7 +9,9 @@ import type { Pokemon, ScoredPokemon, TierLevel } from '../validators/schema.js'
  * This pass adds the custom `recommendation`, base/collector/money/trade/team/
  * rarity/futurePotential scores. It never modifies canonical Pokémon data.
  */
-export async function runScoreStage(): Promise<void> {
+import type { Config } from '../utils/config.js';
+
+export async function runScoreStage(_config?: Config): Promise<void> {
   logger.step('Score', 'Generating Deluge Companion recommendation fields…');
 
   const pokemon = await readJson<Pokemon[]>(MERGED_POKEMON_PATH);

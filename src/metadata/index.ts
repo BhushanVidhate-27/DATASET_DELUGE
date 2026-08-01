@@ -1,7 +1,7 @@
 import { GENERATED_PATHS } from '../utils/paths.js';
 import { readJson, writeJson } from '../utils/fs.js';
 import { logger } from '../utils/logger.js';
-import type { Config } from '../utils/env.js';
+import type { Config } from '../utils/config.js';
 import {
   metadataSchema,
   versionFileSchema,
@@ -48,9 +48,6 @@ export function buildVersionFile(options: {
 
 /**
  * Step 9 of the pipeline: generates metadata.json and version.json.
- *
- * Both files include the SHA-256 checksum of pokemon-db.json, computed by the
- * generate stage and passed through generated/checksum.json.
  */
 export async function runMetadataStage(config: Config): Promise<void> {
   logger.step('Metadata', 'Generating metadata.json and version.json…');
@@ -68,7 +65,7 @@ export async function runMetadataStage(config: Config): Promise<void> {
   }
 
   const generatedAt = new Date().toISOString();
-  const generatorVersion = generatorVersionFromPackage();
+  const generatorVersion = config.generatorVersion || '1.0.0';
 
   const metadata = buildMetadata({
     version: config.datasetVersion,
@@ -114,10 +111,4 @@ export async function runMetadataStage(config: Config): Promise<void> {
   }
 
   logger.success(`metadata.json + version.json written (${scored.length} Pokémon)`);
-}
-
-function generatorVersionFromPackage(): string {
-  // Static constant kept in sync with package.json. Avoids reading the
-  // package file at runtime so the stage stays portable.
-  return '1.0.0';
 }

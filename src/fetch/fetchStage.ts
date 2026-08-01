@@ -3,7 +3,7 @@ import { ALL_FETCHERS } from './fetchers.js';
 import { dirExists } from '../utils/fs.js';
 import { RAW_DIR } from '../utils/paths.js';
 import { logger } from '../utils/logger.js';
-import type { Config } from '../utils/env.js';
+import type { Config } from '../utils/config.js';
 
 /**
  * Step 1 of the pipeline: downloads public Pokémon data and stores it raw.
@@ -15,6 +15,7 @@ export async function runFetchStage(config: Config): Promise<void> {
     baseUrl: config.pokeApiBaseUrl,
     retries: config.fetchRetries,
     retryDelayMs: config.fetchRetryDelayMs,
+    timeoutMs: config.fetchTimeoutMs,
   });
 
   // When the raw directory exists, each fetcher checks its own subdirectory

@@ -5,20 +5,18 @@ import { GENERATED_PATHS } from '../utils/paths.js';
 import { writeBuffer } from '../utils/fs.js';
 import { logger } from '../utils/logger.js';
 import { validateCompressedDb } from '../validators/index.js';
+import type { Config } from '../utils/config.js';
 
 const gzipAsync = promisify(gzip);
 
 /**
  * Step 8 of the pipeline: compresses pokemon-db.json into pokemon-db.json.gz.
- *
- * gzip is the required format. The module is structured so Brotli support can
- * be added later without changing the pipeline contract.
  */
-export async function runCompressStage(): Promise<void> {
+export async function runCompressStage(config: Config): Promise<void> {
   logger.step('Compress', 'Compressing pokemon-db.json…');
 
   const raw = await readFile(GENERATED_PATHS.pokemonDb);
-  const compressed = await gzipAsync(raw, { level: 9 });
+  const compressed = await gzipAsync(raw, { level: config.gzipLevel });
 
   await writeBuffer(GENERATED_PATHS.pokemonDbGz, compressed);
 

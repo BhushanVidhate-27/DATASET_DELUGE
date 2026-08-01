@@ -5,7 +5,6 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Project root is two levels up from src/utils/ → project root.
- * src/utils/paths.ts → src/utils → src → project root
  */
 export const PROJECT_ROOT = path.resolve(currentDir, '..', '..');
 
@@ -53,5 +52,5 @@ export const GENERATED_PATHS = {
   pokemonDb: path.join(GENERATED_DIR, 'pokemon-db.json'),
   pokemonDbGz: path.join(GENERATED_DIR, 'pokemon-db.json.gz'),
   checksum: path.join(GENERATED_DIR, 'checksum.json'),
-  payloadSource: path.join(PROJECT_ROOT, 'intermediate', 'scored', 'pokemon.json'),
+  payloadSource: path.join(INTERMEDIATE_DIR, 'scored', 'pokemon.json'),
 } as const;

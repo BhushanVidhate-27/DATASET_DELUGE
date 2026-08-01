@@ -33,7 +33,9 @@ export interface MergeInputs {
  * Step 4 of the pipeline: merges all normalized resources into one complete
  * canonical Pokémon model per species entry.
  */
-export async function runMergeStage(): Promise<void> {
+import type { Config } from '../utils/config.js';
+
+export async function runMergeStage(_config?: Config): Promise<void> {
   logger.step('Merge', 'Combining normalized datasets into one model…');
 
   const inputs: MergeInputs = {

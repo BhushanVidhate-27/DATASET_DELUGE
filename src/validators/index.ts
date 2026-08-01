@@ -46,7 +46,9 @@ const OUTPUT_VALIDATION_TARGETS: ReadonlyArray<{ file: string; schema: Schema }>
  *
  * Throws ValidationError (failing the build) when the model is invalid.
  */
-export async function runValidateStage(): Promise<void> {
+import type { Config } from '../utils/config.js';
+
+export async function runValidateStage(_config?: Config): Promise<void> {
   logger.step('Validate', 'Validating scored Pokémon model against schema…');
 
   const raw = await readFile(SCORED_POKEMON_PATH, 'utf8').catch(() => null);
