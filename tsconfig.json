@@ -15,8 +15,8 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "src",
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "package.json"]
+  "include": ["src/**/*.ts"]
 }

@@ -49,12 +49,6 @@ const PIPELINE_ORDER: readonly StageName[] = [
 
 /**
  * CLI entry point.
- *
- * Usage:
- *   pnpm <stage>            # run one stage, e.g. pnpm merge
- *   pnpm build-db           # run the full pipeline
- *   pnpm build              # run build pipeline
- *   tsx src/index.ts <stage>
  */
 async function main(): Promise<void> {
   const command = process.argv[2];
@@ -65,20 +59,16 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === 'build-db' || command === 'build') {
-    const config = getConfig();
-    // Fast-path for production/Vercel deployments when generated database already exists
-    if (
-      fs.existsSync(GENERATED_PATHS.pokemonDbGz) &&
-      fs.existsSync(GENERATED_PATHS.version) &&
-      !fs.existsSync(config.paths.rawDir ?? 'raw')
-    ) {
-      logger.info('Pre-built database detected. Updating version & metadata for deployment…');
-      await STAGE_RUNNERS.metadata(config);
-      logger.success('Database ready for static hosting.');
+  if (command === 'build') {
+    if (fs.existsSync(GENERATED_PATHS.pokemonDbGz)) {
+      logger.info('Pre-built database detected in generated/. Database ready for hosting.');
       return;
     }
+    await runPipeline();
+    return;
+  }
 
+  if (command === 'build-db') {
     await runPipeline();
     return;
   }
