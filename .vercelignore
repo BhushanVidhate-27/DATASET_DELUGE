@@ -1,18 +1,5 @@
-# Only deploy the generated/ directory contents.
-# Everything else is build-time only.
-
+# Files ignored by Vercel deployment CLI
 node_modules
-raw
-intermediate
-src
-tests
-dist
-coverage
 .git
-.env
-.env.local
 *.log
 .DS_Store
-
-# Keep generated/ — this is what we're deploying
-!generated

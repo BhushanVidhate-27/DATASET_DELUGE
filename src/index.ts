@@ -10,6 +10,8 @@ import { runValidateStage } from './validators/index.js';
 import { runGenerateStage } from './generators/index.js';
 import { runCompressStage } from './compression/index.js';
 import { runMetadataStage } from './metadata/index.js';
+import fs from 'node:fs';
+import { GENERATED_PATHS } from './utils/paths.js';
 
 const STAGES = [
   'fetch',
@@ -51,6 +53,7 @@ const PIPELINE_ORDER: readonly StageName[] = [
  * Usage:
  *   pnpm <stage>            # run one stage, e.g. pnpm merge
  *   pnpm build-db           # run the full pipeline
+ *   pnpm build              # run build pipeline
  *   tsx src/index.ts <stage>
  */
 async function main(): Promise<void> {
@@ -62,7 +65,20 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === 'build-db') {
+  if (command === 'build-db' || command === 'build') {
+    const config = getConfig();
+    // Fast-path for production/Vercel deployments when generated database already exists
+    if (
+      fs.existsSync(GENERATED_PATHS.pokemonDbGz) &&
+      fs.existsSync(GENERATED_PATHS.version) &&
+      !fs.existsSync(config.paths.rawDir ?? 'raw')
+    ) {
+      logger.info('Pre-built database detected. Updating version & metadata for deployment…');
+      await STAGE_RUNNERS.metadata(config);
+      logger.success('Database ready for static hosting.');
+      return;
+    }
+
     await runPipeline();
     return;
   }
@@ -120,6 +136,7 @@ function printUsage(): void {
       'Usage:',
       '  tsx src/index.ts <stage>',
       '  pnpm build-db',
+      '  pnpm build',
       '',
       'Stages:',
       '  fetch      Download raw data from the public Pokémon source.',
