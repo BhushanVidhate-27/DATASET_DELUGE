@@ -18,7 +18,7 @@
     "compress": "tsx src/index.ts compress",
     "metadata": "tsx src/index.ts metadata",
     "build-db": "tsx src/index.ts build-db",
-    "build": "pnpm build-db",
+    "build": "pnpm build-db || echo 'Using pre-built database in generated/'",
     "serve": "tsx src/server.ts",
     "start": "tsx src/server.ts",
     "test": "vitest run",
